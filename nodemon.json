@@ -1,0 +1,7 @@
+{
+    "env":{
+        "MONGO_ATLAS_PWD":"admin",
+        "DATABASE_NAME":"performance-tracker",
+        "JWT_KEY":"secret"
+    }
+}
