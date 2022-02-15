@@ -10,11 +10,15 @@ router.get('/',(req, res, next) => {
     Batch.find()
         .exec()
         .then(docs=> {            
-            res.status(200).json(docs) 
+            res.status(200).json({
+                response:docs,
+                status:true
+            }) 
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         });
 });
@@ -36,13 +40,15 @@ router.post('/',checkAuth,(req, res, next) => {
             console.log(result);
             res.status(201).json({
                 message:'Batch Added Successfully.',
-                response: result
+                response: result,
+                status:true
             });
         })
         .catch(error => {
             console.log(error);
             res.status(500).json({
-                error: error
+                error: error,
+                status:false
             });
         });    
 });
@@ -53,16 +59,21 @@ router.get('/:batchId',(req, res, next) => {
         .exec()    
         .then( doc => {
             if(doc){
-                res.status(200).json(doc);
+                res.status(200).json({
+                    response:doc,
+                    status:true
+                });
             } else {
                 res.status(404).json({
-                    message:"Not a valid id : " + batchId
+                    message:"Not a valid id : " + batchId,
+                    status:false
                 })
             }
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         })   
 });
@@ -72,11 +83,15 @@ router.delete('/:batchId',checkAuth,(req, res, next) => {
     Batch.remove({_id:batchId})
         .exec()    
         .then( result => {
-            res.status(200).json(result)           
+            res.status(200).json({
+                response:result,
+                status:true
+            })           
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         }) 
 });
@@ -101,13 +116,15 @@ router.patch('/:batchId',checkAuth,(req,res,next) => {
                 if(doc){
                    res.status(200).json({
                        response:doc,
-                       message:'Record updated!'
+                       message:'Record updated!',
+                       status:true
                    });
                 }
            })
            .catch(err=> {
                 res.status(500).json({
-                    error:err
+                    error:err,
+                    status:false
                 });
            });
    
@@ -121,17 +138,22 @@ router.post('/getBatchByCourseID',(req, res, next) => {
         .exec()    
         .then(doc => {
             if(doc){
-                res.status(200).json(doc);
+                res.status(200).json({
+                    response:doc,
+                    status:true
+                });
             } else {
                 res.status(404).json({
-                    message:"Not a valid id :"
+                    message:"Not a valid id :",
+                    status:false
                 })
             }
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         })   
 });

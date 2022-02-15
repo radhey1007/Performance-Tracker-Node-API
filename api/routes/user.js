@@ -11,10 +11,14 @@ router.get('/',(req, res, next) => {
     User.find()
         .exec()
         .then(docs=> {            
-            res.status(200).json(docs) 
+            res.status(200).json({
+                status:true,
+                response:docs
+            }) 
         })
         .catch(err => {
             res.status(500).json({
+                status:false,
                 error:err
             })
         });
@@ -26,14 +30,16 @@ router.post('/',(req, res, next) => {
         .then(user=> {
             if(user.length >=1){
                 return res.status(409).json({
-                    message:'Mail already Exists'
+                    message:'Mail already Exists',
+                    status:false
                 })   
             }
             else {
                 bcrypt.hash(req.body.password , 10, (err,hash) => {
                     if(err){
                         return res.status(500).json({
-                            error:err
+                            error:err,
+                            status:false
                         })
                     } else {
                         const user = new User({
@@ -52,14 +58,14 @@ router.post('/',(req, res, next) => {
                             .then(result => {
                                 console.log(result);
                                 res.status(201).json({
-                                    message:'User Registered Successfully.',
+                                    status:true,
                                     response: result
                                 });
                             })
                             .catch(error => {
-                                console.log(error);
                                 res.status(500).json({
-                                    error: error
+                                    error: error,
+                                    status:false
                                 });
                             }); 
                     }   
@@ -68,7 +74,8 @@ router.post('/',(req, res, next) => {
         })
         .catch( err => {
             return res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         })     
 });
@@ -76,16 +83,17 @@ router.post('/',(req, res, next) => {
 router.post("/login",(req, res, next) => {
     User.find({email:req.body.email}).exec()
     .then(user => {
-            console.log('in login', user)
             if(user.length < 1){
                 return res.status(401).json({
-                    message:"Auth failed"
+                    message:"Auth failed",
+                    status:false
                 })
             } else {
                 bcrypt.compare(req.body.password, user[0].password, (err,result) => {
                     if(err){
                         return res.status(401).json({
-                            message:"Auth failed"
+                            message:"Auth failed",
+                            status:false
                         })
                     }
                     if(result){
@@ -98,11 +106,14 @@ router.post("/login",(req, res, next) => {
                          });    
                         return res.status(200).json({
                             message:"Auth Successful",
-                            token:token
+                            token:token,
+                            status:true,
+                            response:user
                         })
                     } else {
                         return res.status(401).json({
-                            message:"Auth failed"
+                            message:"Auth failed",
+                            status:false
                         })
                     }
                      
@@ -110,9 +121,9 @@ router.post("/login",(req, res, next) => {
             }
         })
         .catch(err => {
-            console.log(err);
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         }) 
 });
@@ -123,16 +134,21 @@ router.get('/:userId',(req, res, next) => {
         .exec()    
         .then( doc => {
             if(doc){
-                res.status(200).json(doc);
+                res.status(200).json({
+                    response:doc,
+                    status:true
+                });
             } else {
                 res.status(404).json({
-                    message:"Not a valid id :" + userId
+                    response:[],
+                    status:false
                 })
             }
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         })   
 });
@@ -142,11 +158,15 @@ router.delete('/:userId',checkAuth,(req, res, next) => {
     User.remove({_id:userId})
         .exec()    
         .then( result => {
-            res.status(200).json(result)           
+            res.status(200).json({
+                response:result,
+                status:true
+            })           
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         }) 
 });
@@ -165,22 +185,35 @@ router.patch('/:userId', checkAuth , (req,res,next) => {
         adminCode:req.body.adminCode,
         isSoftDelete:req.body.isSoftDelete
     }; 
-    let option = {new:true};  
-    User.updateOne({ _id: req.body._id }, { $set: newvalues },option)
-    .exec()
-           .then(doc => {
-                if(doc){
-                   res.status(200).json({
-                       response:doc,
-                       message:'Record updated!'
-                   });
-                }
-           })
+
+    bcrypt.hash(req.body.password , 10, (err,hash) => {
+        if(err){
+            return res.status(500).json({
+                error:err,
+                status:false
+            })
+        } else {
+            newvalues.password = hash;
+            let option = {new:true};  
+            User.updateOne({ _id: req.body._id }, { $set: newvalues },option)
+            .exec()
+            .then(doc => {
+                    if(doc){
+                    res.status(200).json({
+                        response:doc,
+                        message:'Record updated!',
+                        status:true
+                    });
+                    }
+            })
            .catch(err=> {
                 res.status(500).json({
-                    error:err
+                    error:err,
+                    status:false
                 });
-           });   
+           });  
+        }
+    });     
 })
 
 
@@ -191,18 +224,23 @@ router.post('/getUserByType',(req, res, next) => {
         .exec()    
         .then(doc => {
             if(doc){
-                res.status(200).json(doc);
+                res.status(200).json({
+                    status:true,
+                    response:doc
+                });
             } else {
-                console.log(err , 'errro');
                 res.status(404).json({
-                    message:"Not a valid id :"
+                    message:"Not a valid id",
+                    response:[],
+                    status:false,
                 })
             }
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error:err
+                error:err,
+                status:false,
             })
         })   
 });

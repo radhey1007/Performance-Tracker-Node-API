@@ -10,16 +10,23 @@ router.get('/',(req, res, next) => {
     Assignment.find()
         .exec()
         .then(docs=> {            
-            res.status(200).json(docs) 
+            res.status(200).json({
+                response:docs,
+                status:true
+            }) 
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         });
 });
 
 router.post('/', checkAuth ,(req, res, next) => {
+
+    console.log(req.body, '========================');
+
     const assignment = new Assignment({
         _id:new mongoose.Types.ObjectId(),
         assignmentName:req.body.assignmentName,
@@ -35,18 +42,21 @@ router.post('/', checkAuth ,(req, res, next) => {
         description:req.body.description,
         assignmentStatus:req.body.assignmentStatus
     });
+  
     assignment.save()
         .then(result => {
             console.log(result);
             res.status(201).json({
                 message:'Assignment Added Successfully.',
-                response: result
+                response: result,
+                status:true
             });
         })
         .catch(error => {
             console.log(error);
             res.status(500).json({
-                error: error
+                error:error,
+                status:false
             });
         });    
 });
@@ -57,16 +67,21 @@ router.get('/:assignmentId',(req, res, next) => {
         .exec()    
         .then( doc => {
             if(doc){
-                res.status(200).json(doc);
+                res.status(200).json({
+                    status:false,
+                    result:doc
+                });
             } else {
                 res.status(404).json({
-                    message:"Not a valid id : " + assignmentId
+                    message:"Not a valid id : " + assignmentId,
+                    status:false
                 })
             }
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         })   
 });
@@ -76,11 +91,15 @@ router.delete('/:assignmentId',checkAuth , (req, res, next) => {
     Assignment.remove({_id:assignmentId})
         .exec()    
         .then( result => {
-            res.status(200).json(result)           
+            res.status(200).json({
+                response:result,
+                status:true
+            })           
         })
         .catch(err => {
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         }) 
 });
@@ -109,13 +128,15 @@ router.patch('/:assignmentId',checkAuth , (req,res,next) => {
                 if(doc){
                    res.status(200).json({
                        response:doc,
-                       message:'Record updated!'
+                       message:'Record updated!',
+                       status:true
                    });
                 }
            })
            .catch(err=> {
                 res.status(500).json({
-                    error:err
+                    error:err,
+                    status:false
                 });
            });
    
@@ -129,17 +150,22 @@ router.post('/getAssignmentByBatchId',(req, res, next) => {
         .exec()    
         .then(doc => {
             if(doc){
-                res.status(200).json(doc);
+                res.status(200).json({
+                   response:doc,
+                   status:true
+                });
             } else {
                 res.status(404).json({
-                    message:"Not a valid id :"
+                    message:"Not a valid id :",
+                    status:false
                 })
             }
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error:err
+                error:err,
+                status:false
             })
         })   
 });
